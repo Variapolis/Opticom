@@ -20,10 +20,11 @@ namespace Opticom
         internal static float SEARCH_MAX_DISTANCE = 45.0f;
         internal static float SEARCH_RADIUS = 15.0f;
         internal static float HEADING_THRESHOLD = 20.0f;
-        internal static int TRAFFIC_LIGHT_POLL_FREQUENCY_MS = 1200;
+        internal static int TRAFFIC_LIGHT_POLL_FREQUENCY_MS = 750;
         internal static int TRAFFIC_LIGHT_GREEN_DURATION_MS = 5000;
         internal static Ped Player => Game.LocalPlayer.Character;
         internal static bool IsOpticomOn = false;
+        internal static bool TrafficStopped = false;
 
         internal static uint[] trafficLightObjects =
         {
@@ -46,15 +47,17 @@ namespace Opticom
         {
             GameFiber.StartNew(() =>
             {
+                TrafficStopped = true;
                 Vehicle[] nearbyVehs = Player.GetNearbyVehicles(16);
                 NativeFunction.Natives.SET_ENTITY_TRAFFICLIGHT_OVERRIDE(trafficLight, 0);
                 foreach (Vehicle v in nearbyVehs)
                 {
-                    if ((v && v.Driver) && (v == Player.CurrentVehicle || IsDriverInPursuit(v.Driver))) continue;
+                    if ((v && v.Driver) && (v == Player.CurrentVehicle || IsDriverInPursuit(v.Driver) || v.Model.IsEmergencyVehicle)) continue;
                     if(v && v.Driver) v.Driver.Tasks.PerformDrivingManeuver(v, VehicleManeuver.GoForwardStraightBraking, 2000);
                 }
                 GameFiber.Wait(TRAFFIC_LIGHT_GREEN_DURATION_MS);
                 NativeFunction.Natives.SET_ENTITY_TRAFFICLIGHT_OVERRIDE(trafficLight, 3);
+                TrafficStopped = false;
             });
         }
 
@@ -89,7 +92,7 @@ namespace Opticom
                 while (true)
                 {
                     GameFiber.Yield();
-                    if (!IsOpticomOn) continue;
+                    if (!IsOpticomOn || TrafficStopped) continue;
                     GameFiber.Wait(TRAFFIC_LIGHT_POLL_FREQUENCY_MS);
                     if (Player.IsInAnyVehicle(false) && Player.CurrentVehicle)
                     {
