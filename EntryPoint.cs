@@ -143,16 +143,12 @@ namespace Opticom
                 if(!IsOpticomOn || TrafficStopped) { GameFiber.SleepWhile(() => !IsOpticomOn || TrafficStopped, 0); }
                 var maxDist = 35;
                 _maxDistSqr = maxDist * maxDist;
-                var timer = new Stopwatch();
                 while (true)
                 {
                     _checkedNodes.Clear();
-                    timer.Start();
+
                     FindIntersectionAheadOfPlayer();
                     CheckTrafficLightTimeout();
-                    timer.Stop();
-                    Game.DisplaySubtitle(timer.Elapsed.Milliseconds.ToString());
-                    timer.Reset();
                     GameFiber.Yield();
                 }
                 // ReSharper disable once FunctionNeverReturns
