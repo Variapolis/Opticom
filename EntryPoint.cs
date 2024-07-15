@@ -132,7 +132,7 @@ namespace Opticom
 
         internal static void OverrideTrafficLight(Object trafficLight)
         {
-            TrafficStopped = true;
+            // TODO: Add the lights to the timeout dictionary.
             NativeFunction.Natives.SET_ENTITY_TRAFFICLIGHT_OVERRIDE(trafficLight, 0);
         }
 
@@ -163,6 +163,7 @@ namespace Opticom
         {
             foreach (var pair in DebugDict)
             {
+                // TODO: Add traffic control
                 if (pair.Value > Game.GameTime + OverrideDuration)
                 {
                     NativeFunction.Natives.SET_ENTITY_TRAFFICLIGHT_OVERRIDE(pair.Key, 3);
@@ -206,6 +207,8 @@ namespace Opticom
                                 intersectionNodePos.Y, intersectionNodePos.Z,
                                 out int _, out int nodeFlags) || (nodeFlags & 128) != 128) continue;
                         
+                        // TODO: This may need a zThreshold to prevent intersections underneath or above the player from activating.
+                        
                         // Get the size of the intersection square diagonally
                         float intersectionSize = Vector3.Distance(traffLightNodePos, intersectionNodePos) * sqrRootOfTwo * intersectionScale;
                         OverrideTrafficLightsInRadius(intersectionNodePos, intersectionSize);
@@ -220,6 +223,7 @@ namespace Opticom
             {
                 if (TrafficLightModels.Contains(ent.Model.Hash) && ent is Object trafficLightObj)
                 {
+                    // TODO: Add red/green options and heading overrides.
                     // Debug.DrawWireBox(ent.Position, ent.Orientation, VectorOne, Color.Red);
                     OverrideTrafficLight(trafficLightObj);
                 }
